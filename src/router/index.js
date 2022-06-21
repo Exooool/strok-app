@@ -1,20 +1,49 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
+import Layout from "../views/layout/index.vue";
+import Home from "../views/home/index.vue";
+import CaseList from "../views/caseList/index.vue";
+import CaseDetail from "../views/caseList/caseDetail/index.vue";
+import Login from "../views/login/login.vue";
 
 const routes = [
   {
     path: "/",
-    name: "home",
-    component: HomeView,
+    name: "layout",
+    component: Layout,
+    children: [
+      {
+        path: "/home",
+        name: "home",
+        component: Home,
+        meta: {
+          title: "主页",
+        },
+      },
+      {
+        path: "/caseList",
+        name: "caseList",
+        component: CaseList,
+        meta: {
+          title: "病例列表",
+        },
+      },
+    ],
   },
   {
-    path: "/about",
-    name: "about",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/AboutView.vue"),
+    path: "/caseDetail",
+    name: "caseDetail",
+    component: CaseDetail,
+    meta: {
+      title: "案例详情",
+    },
+  },
+  {
+    path: "/login",
+    name: "login",
+    component: Login,
+    meta: {
+      title: "登录",
+    },
   },
 ];
 
