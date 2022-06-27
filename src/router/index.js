@@ -4,6 +4,7 @@ import Home from "../views/home/index.vue";
 import CaseList from "../views/caseList/index.vue";
 import CaseDetail from "../views/caseList/caseDetail/index.vue";
 import Login from "../views/login/login.vue";
+import Setting from "../views/setting/index.vue";
 
 const routes = [
   {
@@ -25,6 +26,14 @@ const routes = [
         component: CaseList,
         meta: {
           title: "病例列表",
+        },
+      },
+      {
+        path: "/setting",
+        name: "setting",
+        component: Setting,
+        meta: {
+          title: "设置",
         },
       },
     ],

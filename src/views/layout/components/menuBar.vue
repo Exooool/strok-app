@@ -55,7 +55,7 @@ export default defineComponent({
         // },
         {
           name: "设置",
-          path: "",
+          path: "/setting",
           iconTo: require("@/assets/6.png"),
           iconFrom: require("@/assets/6-6.png"),
         },
