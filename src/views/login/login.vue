@@ -5,27 +5,35 @@
       <div class="logo">
         <img src="" alt="" />
       </div>
-      <el-form :model="loginForm">
-        <el-form-item>
+      <el-form :model="loginForm" ref="ruleFormRef" :rules="rules">
+        <el-form-item prop="username">
           <el-input
-            v-model="loginForm.account"
-            placeholder="请输入账号"
+            v-model="loginForm.username"
+            placeholder="请输入账号/用户名"
           ></el-input>
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="password">
           <el-input
             v-model="loginForm.password"
             placeholder="请输入密码"
+            :type="passwordShow ? 'text' : 'password'"
+            ><template v-slot:suffix>
+              <el-icon @click="passwordShow = !passwordShow"
+                ><More v-if="passwordShow" />
+                <View v-else /> </el-icon></template
           ></el-input>
         </el-form-item>
-        <el-form-item class="verifyCodeBox">
+        <el-form-item class="verifyCodeBox" prop="captcha">
           <el-input
-            v-model="loginForm.verifyCode"
+            v-model="loginForm.captcha"
             placeholder="请输入验证码"
+            :maxlength="4"
           ></el-input>
           <img
+            ref="img"
+            @click="getValidCode()"
             class="verifyCode"
-            src="https://images.unsplash.com/photo-1638913972776-873fc7af3fdf?ixlib=rb-1.2.1&ixid=MnwxMjA3fDF8MHxlZGl0b3JpYWwtZmVlZHwxfHx8ZW58MHx8fHw%3D&auto=format&fit=crop&w=500&q=60"
+            src=""
             alt=""
           />
         </el-form-item>
@@ -38,22 +46,113 @@
 </template>
 
 <script>
-import { defineComponent, reactive } from "vue";
+import { defineComponent, reactive, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
+import "element-plus/es/components/message/style/css";
+const axios = require("axios");
 
 export default defineComponent({
   setup() {
+    // 通过ref获取dom元素
+    const img = ref(null);
+    const ruleFormRef = ref(null);
+    const router = useRouter();
+    const passwordShow = ref(false);
+
+    // 表单
     const loginForm = reactive({
-      account: "",
+      username: "",
       password: "",
-      verifyCode: "",
+      imgcode_id: "",
+      captcha: "",
+      isEncode: false,
     });
 
-    const submit = () => {
-      console.log(loginForm);
+    const rules = {
+      username: [
+        { required: true, message: "请输入账号/用户名", trigger: "blur" },
+      ],
+      password: [{ required: true, message: "请输入密码", trigger: "blur" }],
+      captcha: [
+        { required: true, message: "请输入验证码", trigger: "blur" },
+        {},
+      ],
     };
+
+    onMounted(() => {
+      getValidCode();
+    });
+
+    // 获取验证码
+    const getValidCode = () => {
+      axios
+        .post("/peng/User/Captcha")
+        .then((res) => {
+          // console.log(res);
+          loginForm.imgcode_id = res.data.id;
+          img.value.src = res.data.image_base;
+        })
+        .catch(() => {
+          ElMessage({
+            type: "error",
+            message: "获取验证码失败",
+          });
+        });
+    };
+
+    // 验证表单完整性后提交 表单提交
+    const submit = async () => {
+      if (!ruleFormRef.value) return;
+      await ruleFormRef.value.validate((valid, fields) => {
+        if (valid) {
+          axios
+            .post("/peng/user/Login/", loginForm)
+            .then((res) => {
+              console.log(res);
+              if (res.data.code === 0) {
+                console.log(res);
+                res = res.data;
+                localStorage.setItem("access_token", res.data.access);
+                localStorage.setItem("user_pk", res.data.user_pk);
+                localStorage.setItem("username", loginForm.username);
+                localStorage.setItem("work_unit", res.data.work_unit);
+                localStorage.setItem("user_role", res.data.user_role);
+                console.info("登入成功");
+                router.push("/home");
+                ElMessage({
+                  type: "success",
+                  message: "登录成功",
+                });
+              } else {
+                ElMessage({
+                  type: "error",
+                  message: "登录失败！请检查用户名或密码或验证码是否正确",
+                });
+              }
+            })
+            .catch((e) => {
+              console.log(e);
+              ElMessage({
+                type: "error",
+                message: "登录失败！请检查用户名或密码或验证码是否正确",
+              });
+            });
+        } else {
+          console.log("error submit!", fields);
+          ElMessage({ type: "error", message: "请填写完整表单" });
+        }
+      });
+    };
+
     return {
       loginForm,
+      passwordShow,
+      img,
+      ruleFormRef,
+      rules,
       submit,
+      getValidCode,
     };
   },
 });

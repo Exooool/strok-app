@@ -26,7 +26,7 @@
       content-position="left"
       border-style="dashed"
     ></el-divider>
-    <div class="showMore">查看详情</div>
+    <router-link class="showMore" to="/caseDetail">查看详情</router-link>
   </div>
 </template>
 
@@ -88,6 +88,7 @@ export default defineComponent({
   .showMore {
     text-align: center;
     color: #426bba;
+    text-decoration: none;
     margin-bottom: 5px;
   }
   // 水平分割线

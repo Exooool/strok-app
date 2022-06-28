@@ -37,7 +37,7 @@ export default defineComponent({
         },
         {
           name: "病例增加",
-          path: "",
+          path: "/caseAdd",
           iconTo: require("@/assets/2.png"),
           iconFrom: require("@/assets/2-2.png"),
         },
@@ -73,7 +73,7 @@ export default defineComponent({
 .menuBar {
   display: flex;
   justify-content: center;
-  background: #426bba;
+  background: linear-gradient(#619ee1, #306ba7);
   position: fixed;
   bottom: 0;
   left: 0;
