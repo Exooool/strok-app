@@ -264,8 +264,8 @@
 
 <script>
 import { defineComponent, reactive } from "vue";
-import dropDown from "../utils/dropDown.js";
-import rules from "../utils/rules.js";
+import dropDown from "@/utils/dropDown.js";
+import rules from "@/utils/rules.js";
 
 export default defineComponent({
   setup() {

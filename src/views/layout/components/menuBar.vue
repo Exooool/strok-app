@@ -79,6 +79,7 @@ export default defineComponent({
   left: 0;
   right: 0;
   box-shadow: -3px -4px 7px 0px #0000000d;
+  z-index: 2000;
 
   .menuSelected {
     background-color: white;
