@@ -6,7 +6,8 @@ import CaseDetail from "../views/caseList/caseDetail/index.vue";
 import Login from "../views/login/login.vue";
 import CaseAdd from "../views/caseAdd/index.vue";
 import Setting from "../views/setting/index.vue";
-
+import CaseAddModelOne from "../views/caseAdd/model/caseAddModelOne.vue";
+import CaseAddModelTwo from "../views/caseAdd/model/caseAddModelTwo.vue";
 import { ElMessage } from "element-plus";
 
 const routes = [
@@ -20,17 +21,38 @@ const routes = [
         name: "home",
         component: Home,
         meta: {
+          routerIndex: 0,
           title: "主页",
           canBack: false,
         },
       },
+      // 重定向
+      {
+        path: "/",
+        redirect: "/home",
+      },
       {
         path: "/caseList",
+        redirect: "/caseList/100",
+      },
+      {
+        path: "/caseList/:type",
         name: "caseList",
         component: CaseList,
         meta: {
+          routerIndex: 1,
           title: "病例列表",
           canBack: false,
+        },
+      },
+      {
+        path: "/caseDetail",
+        name: "caseDetail",
+        component: CaseDetail,
+        meta: {
+          routerIndex: 1,
+          title: "案例详情",
+          canBack: true,
         },
       },
       {
@@ -38,8 +60,29 @@ const routes = [
         name: "caseAdd",
         component: CaseAdd,
         meta: {
-          title: "病例增加",
+          routerIndex: 2,
+          title: "病例新增",
           canBack: false,
+        },
+      },
+      {
+        path: "/caseAddModelOne",
+        name: "caseAddModelOne",
+        component: CaseAddModelOne,
+        meta: {
+          routerIndex: 2,
+          title: "病例新增1",
+          canBack: true,
+        },
+      },
+      {
+        path: "/caseAddModelTwo",
+        name: "caseAddModelTwo",
+        component: CaseAddModelTwo,
+        meta: {
+          routerIndex: 2,
+          title: "病例新增2",
+          canBack: true,
         },
       },
       {
@@ -47,29 +90,14 @@ const routes = [
         name: "setting",
         component: Setting,
         meta: {
+          routerIndex: 3,
           title: "设置",
           canBack: false,
-        },
-      },
-      {
-        path: "/setting",
-        name: "setting",
-        component: Setting,
-        meta: {
-          title: "设置",
         },
       },
     ],
   },
-  {
-    path: "/caseDetail",
-    name: "caseDetail",
-    component: CaseDetail,
-    meta: {
-      title: "案例详情",
-      canBack: true,
-    },
-  },
+
   {
     path: "/login",
     name: "login",

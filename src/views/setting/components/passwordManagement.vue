@@ -7,7 +7,7 @@
     <el-main>
       <el-form
         :model="data.ruleForm"
-        ref="formFileds"
+        ref="ruleForm"
         :rules="data.rules"
         :inline="false"
       >
@@ -37,10 +37,8 @@
           ></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="submitForm('ruleForm')"
-            >提交</el-button
-          >
-          <el-button @click="resetForm('ruleForm')">重置</el-button>
+          <el-button type="primary" @click="submitForm()">提交</el-button>
+          <el-button @click="resetForm()">重置</el-button>
         </el-form-item>
       </el-form>
     </el-main>
@@ -50,11 +48,12 @@
 <script>
 import { ElMessage } from "element-plus";
 import { defineComponent, reactive, ref } from "vue";
+const axios = require("axios");
 
 export default defineComponent({
   setup() {
     // 获取表单dom元素
-    const formFileds = ref(null);
+    const ruleForm = ref(null);
     // 用户修改密码规则
     {
       var oldValidatePass = (rule, value, callback) => {
@@ -84,8 +83,8 @@ export default defineComponent({
             new Error("密码长度不能小于8位,必须包含字母、数组、特殊字符")
           );
         } else {
-          if (this.ruleForm.password2 !== "") {
-            this.$refs.ruleForm.validateField("validatePass2");
+          if (data.ruleForm.password2 !== "") {
+            ruleForm.value.validateField("validatePass2");
           }
           callback();
         }
@@ -93,7 +92,7 @@ export default defineComponent({
       var validatePass2 = (rule, value, callback) => {
         if (value === "") {
           callback(new Error("请再次输入密码"));
-        } else if (value !== this.ruleForm.password) {
+        } else if (value !== data.ruleForm.password) {
           callback(new Error("两次输入密码不一致!"));
         } else {
           callback();
@@ -103,12 +102,8 @@ export default defineComponent({
 
     // 密码修改
     const submitForm = () => {
-      formFileds.value.validate(async (valid) => {
+      ruleForm.value.validate(async (valid) => {
         if (valid) {
-          // var reToken = window.localStorage.getItem('refresh').toString()
-          // reToken = reToken.replace("\"",'').replace("\"",'')
-          // const resrefresh = await instance.post('/api/auth/login/refresh/', { "refresh":reToken})
-          // localStorage.setItem("access_token", JSON.stringify(resrefresh.access))
           try {
             var access_token = window.localStorage
               .getItem("access_token")
@@ -124,7 +119,7 @@ export default defineComponent({
               password_new: data.ruleForm.password,
             };
             // console.log(objdata)
-            this.$axios
+            axios
               .post("/peng/User/ChangePassword", objdata, {
                 headers: { Authorization: ` ${token}` },
               })
@@ -142,7 +137,7 @@ export default defineComponent({
                     type: "success",
                   });
                   // 修改成功后清除输入框
-                  this.resetForm("ruleForm");
+                  resetForm();
                 }
               });
           } catch (error) {
@@ -158,8 +153,8 @@ export default defineComponent({
     };
     // 重置修改密码输入框
     const resetForm = () => {
-      console.log(formFileds.value);
-      formFileds.value.resetFields();
+      console.log(ruleForm.value);
+      ruleForm.value.resetFields();
     };
 
     const data = reactive({
@@ -183,7 +178,7 @@ export default defineComponent({
     });
     return {
       data,
-      formFileds,
+      ruleForm,
       submitForm,
       resetForm,
     };

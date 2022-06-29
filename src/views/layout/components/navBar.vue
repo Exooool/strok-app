@@ -31,6 +31,10 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .navBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 50px;
   display: flex;
   align-items: center;
@@ -38,6 +42,7 @@ export default defineComponent({
   color: white;
   padding-left: 10px;
   background: linear-gradient(#619ee1, #306ba7);
+  z-index: 2000;
   // box-shadow: 6px 6px 40px 0px #0000007d;
   // box-shadow: 4px 4px 10px 0px #00000054;
   .title {

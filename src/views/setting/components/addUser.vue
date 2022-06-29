@@ -136,11 +136,50 @@
 </template>
 
 <script>
-import { defineComponent, reactive } from "vue";
-// const axios = require("axios");
+import { ElMessage } from "element-plus";
+import { defineComponent, reactive, ref } from "vue";
+const axios = require("axios");
 
 export default defineComponent({
+  methods: {
+    // 提交新增用户申请
+    submitForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          try {
+            this.data.ruleForm.date_joined = new Date().toLocaleString();
+            axios.post("/peng/User/Add", this.data.ruleForm).then((res) => {
+              // console.log(res)
+              if (res.data.code !== 0) {
+                var errMessage = "[" + res.data.code + "]" + res.data.msg;
+                ElMessage.error({
+                  dangerouslyUseHTMLString: true,
+                  message: errMessage,
+                });
+              } else {
+                ElMessage({
+                  message: "新增用户成功",
+                  type: "success",
+                });
+                this.$parent.GetUserList();
+                this.$parent.closeDialog();
+              }
+            });
+          } catch (error) {
+            ElMessage.error({
+              dangerouslyUseHTMLString: true,
+              message: "请求发送失败",
+            });
+          }
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
+    },
+  },
   setup() {
+    const ruleForm = ref(null);
     // 新增用户规则
     {
       // 用户名
@@ -172,8 +211,8 @@ export default defineComponent({
         ) {
           callback(new Error("长度不能小于8位且包含字母、数字、特殊字符"));
         } else {
-          if (this.ruleForm.password2 !== "") {
-            this.$refs.ruleForm.validateField("password2");
+          if (data.ruleForm.password2 !== "") {
+            ruleForm.value.validateField("password2");
           }
           callback();
         }
@@ -182,7 +221,7 @@ export default defineComponent({
       var password2 = (rule, value, callback) => {
         if (value === "") {
           callback(new Error("请再次输入密码"));
-        } else if (value !== this.ruleForm.password) {
+        } else if (value !== data.ruleForm.password) {
           callback(new Error("两次输入密码不一致!"));
         } else {
           callback();
@@ -334,49 +373,13 @@ export default defineComponent({
         email: [{ validator: email, required: false, trigger: "blur" }],
       },
     });
-
-    // 提交新增用户申请
-    const submitForm = (formName) => {
-      this.$refs[formName].validate(async (valid) => {
-        if (valid) {
-          try {
-            this.ruleForm.date_joined = new Date().toLocaleString();
-            this.$axios.post("/peng/User/Add", this.ruleForm).then((res) => {
-              // console.log(res)
-              if (res.data.code !== 0) {
-                var errMessage = "[" + res.data.code + "]" + res.data.msg;
-                this.$message.error({
-                  dangerouslyUseHTMLString: true,
-                  message: errMessage,
-                });
-              } else {
-                this.$message({
-                  message: "新增用户成功",
-                  type: "success",
-                });
-                this.$parent.GetUserList();
-                this.paren();
-              }
-            });
-          } catch (error) {
-            this.$message.error({
-              dangerouslyUseHTMLString: true,
-              message: "请求发送失败",
-            });
-          }
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
-    };
-    const resetForm = (formName) => {
-      this.$refs[formName].resetFields();
+    const resetForm = () => {
+      ruleForm.value.resetFields();
     };
 
     return {
       data,
-      submitForm,
+      ruleForm,
       resetForm,
     };
   },

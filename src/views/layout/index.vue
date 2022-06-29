@@ -2,7 +2,7 @@
   <div class="layoutPage">
     <!-- 导航头 -->
     <NavBar :title="'主页'"></NavBar>
-    <el-main height="">
+    <el-main>
       <!-- Main content -->
       <router-view></router-view>
     </el-main>
@@ -32,5 +32,9 @@ export default defineComponent({
 .layoutPage {
   height: 100vh;
   position: relative;
+  .el-main {
+    padding-top: 70px;
+    padding-bottom: 70px;
+  }
 }
 </style>
