@@ -1,4 +1,4 @@
-# strok-app-nots
+# strok-app
 
 ## Project setup
 ```

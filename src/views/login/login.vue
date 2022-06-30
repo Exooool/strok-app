@@ -1,14 +1,15 @@
 <template>
   <div class="loginPage">
-    <el-header>登录</el-header>
     <el-main>
       <div class="logo">
-        <img src="" alt="" />
+        <!-- <img src="" alt="" /> -->
+        <span>脑血管病救治与质量控制中心</span>
       </div>
       <el-form :model="loginForm" ref="ruleFormRef" :rules="rules">
         <el-form-item prop="username">
           <el-input
             v-model="loginForm.username"
+            :prefix-icon="Avatar"
             placeholder="请输入账号/用户名"
           ></el-input>
         </el-form-item>
@@ -16,6 +17,7 @@
           <el-input
             v-model="loginForm.password"
             placeholder="请输入密码"
+            :prefix-icon="Lock"
             :type="passwordShow ? 'text' : 'password'"
             ><template v-slot:suffix>
               <el-icon @click="passwordShow = !passwordShow"
@@ -26,6 +28,7 @@
         <el-form-item class="verifyCodeBox" prop="captcha">
           <el-input
             v-model="loginForm.captcha"
+            :prefix-icon="Checked"
             placeholder="请输入验证码"
             :maxlength="4"
           ></el-input>
@@ -38,7 +41,9 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button class="loginBtn" @click="submit">立即登录</el-button>
+          <el-button type="primary" class="loginBtn" @click="submit"
+            >立即登录</el-button
+          >
         </el-form-item>
       </el-form>
     </el-main>
@@ -49,7 +54,7 @@
 import { defineComponent, reactive, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
-import "element-plus/es/components/message/style/css";
+import { Avatar, Lock, Checked } from "@element-plus/icons-vue";
 const axios = require("axios");
 
 export default defineComponent({
@@ -118,6 +123,12 @@ export default defineComponent({
                 localStorage.setItem("username", loginForm.username);
                 localStorage.setItem("work_unit", res.data.work_unit);
                 localStorage.setItem("user_role", res.data.user_role);
+                // 设置登录过期时间
+                const end = new Date(
+                  new Date(new Date().toLocaleDateString()).getTime() +
+                    24 * 60 * 60 * 1000
+                ).getTime();
+                localStorage.setItem("endTime", end);
                 console.info("登入成功");
                 router.push("/home");
                 ElMessage({
@@ -153,6 +164,9 @@ export default defineComponent({
       rules,
       submit,
       getValidCode,
+      Avatar,
+      Lock,
+      Checked,
     };
   },
 });
@@ -161,6 +175,9 @@ export default defineComponent({
 <style lang="scss" scoped>
 .loginPage {
   height: 100vh;
+  display: flex;
+  align-items: center;
+  background-color: #e5e5e5;
   .el-header {
     font-size: 18px;
     // color: white;
@@ -179,22 +196,38 @@ export default defineComponent({
       width: 200px;
       object-fit: cover;
     }
+
+    span {
+      width: 100%;
+      line-height: 80px;
+      text-align: center;
+      font-size: 23px;
+      color: #fff;
+    }
   }
   .el-main {
-    padding: 20px 50px;
+    padding: 20px 20px;
+    .el-form {
+      background-color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      .el-input {
+        height: 45px;
+        font-size: 16px;
+        :deep(.el-input__wrapper) {
+          box-shadow: none;
+          border-radius: 0;
+          border-bottom: 0.5px solid rgb(234, 234, 234);
+        }
+      }
+    }
   }
-  .el-input {
-    height: 45px;
-    font-size: 16px;
-  }
+
   // 验证码
   .verifyCodeBox {
     display: flex;
     .el-input {
       width: calc(100% - 80px);
-      .el-input__wrapper {
-        border-radius: 0px;
-      }
     }
 
     .verifyCode {

@@ -36,7 +36,7 @@
               type="date"
               placeholder="选择开始日期"
               @calendar-change="verifyDate()"
-              style="width: 50%"
+              style="width: 45%"
             >
             </el-date-picker>
 
@@ -45,7 +45,7 @@
               type="date"
               placeholder="选择结束日期"
               @calendar-change="verifyDate()"
-              style="width: 50%"
+              style="width: 45%"
             >
             </el-date-picker>
           </div>
@@ -79,6 +79,7 @@ export default defineComponent({
   setup() {
     // echarts 坐标数据
     const data = reactive({
+      options: false,
       xData: [],
       yData: [],
       SearchTimeSelect: "1",
@@ -378,13 +379,18 @@ export default defineComponent({
     .dateSelect {
       display: flex;
       flex-direction: column;
-      .title span {
-        display: inline-block;
-        width: 50%;
+      .title {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        span {
+          display: inline-block;
+          width: 45%;
+        }
       }
       .picker {
         display: flex;
-        flex-direction: row;
+        justify-content: space-between;
       }
     }
   }

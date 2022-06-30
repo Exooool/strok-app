@@ -2,81 +2,87 @@
   <div class="caseListPage">
     <!-- 病例筛选 -->
     <div class="caseFilter">
-      <div>病例类型:</div>
-      <el-select
-        v-model="caseType"
-        @change="caseTypeChangeHandler(caseType)"
-        style="width: 150px"
-      >
-        <el-option
-          v-for="item in case_type_choices"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        >
-        </el-option>
-      </el-select>
-      <el-select
-        placeholder="随访状态选择"
-        collapse-tags
-        v-model="followUp"
-        v-if="caseType === 1 || caseType === 100 || caseType === 2"
-        style="width: 150px; margin-left: 10px"
-      >
-        <el-option
-          v-for="item in followUpOptions"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        >
-        </el-option>
-      </el-select>
-      <el-input
-        style="width: 200px"
-        v-model="inputData"
-        placeholder="请输入患者姓名"
-      ></el-input>
-      <el-select
-        v-model="SearchTimeSelect"
-        v-if="caseType === 1 || caseType === 100 || caseType === 2"
-        style="width: 120px; margin-left: 10px"
-      >
-        <el-option label="发病时间" value="1"> </el-option>
-        <el-option label="出院时间" value="2"> </el-option>
-        <el-option label="登记时间" value="3"> </el-option>
-      </el-select>
-      <el-date-picker
-        v-model="selectTime[0]"
-        type="date"
-        placeholder="选择开始日期"
-        @calendar-change="verifyDate()"
-        style="width: 50%"
-      >
-      </el-date-picker>
+      <div class="filterOption">
+        <div class="title">病例类型:</div>
+        <div class="optionsRow">
+          <el-select
+            v-model="caseType"
+            @change="caseTypeChangeHandler(caseType)"
+            style="width: 150px"
+          >
+            <el-option
+              v-for="item in case_type_choices"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
+          <el-select
+            placeholder="随访状态选择"
+            collapse-tags
+            v-model="followUp"
+            v-if="caseType === 1 || caseType === 100 || caseType === 2"
+            style="width: 150px; margin-left: 10px"
+          >
+            <el-option
+              v-for="item in followUpOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
+        </div>
+        <div class="optionsRow">
+          <el-input
+            style="width: 200px"
+            v-model="inputData"
+            placeholder="请输入患者姓名"
+          ></el-input>
+          <el-select
+            v-model="SearchTimeSelect"
+            v-if="caseType === 1 || caseType === 100 || caseType === 2"
+            style="width: 120px; margin-left: 10px"
+          >
+            <el-option label="发病时间" value="1"> </el-option>
+            <el-option label="出院时间" value="2"> </el-option>
+            <el-option label="登记时间" value="3"> </el-option>
+          </el-select>
+        </div>
+        <div class="optionsRow">
+          <el-date-picker
+            v-model="selectTime[0]"
+            type="date"
+            placeholder="选择开始日期"
+            @calendar-change="verifyDate()"
+            style="width: 45%; margin-right: 10px"
+          >
+          </el-date-picker>
 
-      <el-date-picker
-        v-model="selectTime[1]"
-        type="date"
-        placeholder="选择结束日期"
-        @calendar-change="verifyDate()"
-        style="width: 50%"
-      >
-      </el-date-picker>
-      <el-button
-        type="primary"
-        @click="handleCurrentChange()"
-        style="margin-left: 10px"
-        >查询</el-button
-      >
-      <el-button
-        class="anniu"
-        v-if="role === 99 || role === 9"
-        type="primary"
-        @click="exportExcel()"
-        style="margin-left: 10px"
-      >
-        导出数据表
-      </el-button>
+          <el-date-picker
+            v-model="selectTime[1]"
+            type="date"
+            placeholder="选择结束日期"
+            @calendar-change="verifyDate()"
+            style="width: 45%"
+          >
+          </el-date-picker>
+        </div>
+
+        <el-button type="primary" @click="handleCurrentChange()"
+          >查询</el-button
+        >
+        <el-button
+          class="anniu"
+          v-if="role === 99 || role === 9"
+          type="primary"
+          @click="exportExcel()"
+          style="margin-left: 10px"
+        >
+          导出数据表
+        </el-button>
+      </div>
     </div>
     <div class="listContent">
       <CaseCard
@@ -605,6 +611,12 @@ export default defineComponent({
   // 病例过滤
   .caseFilter {
     margin-bottom: 10px;
+    .title {
+      margin-bottom: 5px;
+    }
+    .optionsRow {
+      margin-bottom: 5px;
+    }
   }
   // 病例列表内容
   .listContent {

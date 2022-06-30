@@ -12,7 +12,6 @@
 </template>
 
 <script>
-import "element-plus/es/components/message/style/css";
 import { defineComponent } from "vue";
 import NavBar from "./components/navBar.vue";
 import MenuBar from "./components/menuBar.vue";

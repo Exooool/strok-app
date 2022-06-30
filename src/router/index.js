@@ -1,25 +1,16 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Layout from "../views/layout/index.vue";
-import Home from "../views/home/index.vue";
-import CaseList from "../views/caseList/index.vue";
-import CaseDetail from "../views/caseList/caseDetail/index.vue";
-import Login from "../views/login/login.vue";
-import CaseAdd from "../views/caseAdd/index.vue";
-import Setting from "../views/setting/index.vue";
-import CaseAddModelOne from "../views/caseAdd/model/caseAddModelOne.vue";
-import CaseAddModelTwo from "../views/caseAdd/model/caseAddModelTwo.vue";
 import { ElMessage } from "element-plus";
 
 const routes = [
   {
     path: "/",
     name: "layout",
-    component: Layout,
+    component: () => import("../views/layout/index.vue"),
     children: [
       {
         path: "/home",
         name: "home",
-        component: Home,
+        component: () => import("../views/home/index.vue"),
         meta: {
           routerIndex: 0,
           title: "主页",
@@ -38,7 +29,7 @@ const routes = [
       {
         path: "/caseList/:type",
         name: "caseList",
-        component: CaseList,
+        component: () => import("../views/caseList/index.vue"),
         meta: {
           routerIndex: 1,
           title: "病例列表",
@@ -48,7 +39,7 @@ const routes = [
       {
         path: "/caseDetail",
         name: "caseDetail",
-        component: CaseDetail,
+        component: () => import("../views/caseList/caseDetail/index.vue"),
         meta: {
           routerIndex: 1,
           title: "案例详情",
@@ -58,7 +49,7 @@ const routes = [
       {
         path: "/caseAdd",
         name: "caseAdd",
-        component: CaseAdd,
+        component: () => import("../views/caseAdd/index.vue"),
         meta: {
           routerIndex: 2,
           title: "病例新增",
@@ -68,7 +59,7 @@ const routes = [
       {
         path: "/caseAddModelOne",
         name: "caseAddModelOne",
-        component: CaseAddModelOne,
+        component: () => import("../views/caseAdd/model/caseAddModelOne.vue"),
         meta: {
           routerIndex: 2,
           title: "病例新增1",
@@ -78,7 +69,7 @@ const routes = [
       {
         path: "/caseAddModelTwo",
         name: "caseAddModelTwo",
-        component: CaseAddModelTwo,
+        component: () => import("../views/caseAdd/model/caseAddModelTwo.vue"),
         meta: {
           routerIndex: 2,
           title: "病例新增2",
@@ -88,7 +79,7 @@ const routes = [
       {
         path: "/setting",
         name: "setting",
-        component: Setting,
+        component: () => import("../views/setting/index.vue"),
         meta: {
           routerIndex: 3,
           title: "设置",
@@ -97,11 +88,10 @@ const routes = [
       },
     ],
   },
-
   {
     path: "/login",
     name: "login",
-    component: Login,
+    component: () => import("../views/login/login.vue"),
     meta: {
       title: "登录",
       canBack: false,
@@ -119,16 +109,25 @@ router.beforeEach((to, from, next) => {
   if (to.path === "/login") {
     next();
   } else {
+    //当前时间的毫秒数
+    const start = new Date().getTime();
     let access_token = localStorage.getItem("access_token");
     if (
       access_token === null ||
       access_token === "" ||
-      access_token.length <= 50
+      access_token.length <= 50 ||
+      !localStorage.getItem("endTime")
     ) {
       ElMessage({ type: "error", message: "登录身份已过期,请重新登录" });
       next("/login");
     } else {
-      next();
+      if (start > localStorage.getItem("endTime")) {
+        localStorage.clear();
+        ElMessage.error("登录身份已过期,请重新登录");
+        next("/login");
+      } else {
+        next();
+      }
     }
   }
 });

@@ -10,9 +10,7 @@
           <img
             class="menuLogo"
             :src="
-              item.index === route.meta.routerIndex
-                ? item.iconTo
-                : item.iconFrom
+              item.index === route.meta.routerIndex ? item.iconTo : item.iconTo
             "
             alt=""
           />
