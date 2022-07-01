@@ -138,7 +138,7 @@
 <script>
 import { ElMessage } from "element-plus";
 import { defineComponent, reactive, ref } from "vue";
-const axios = require("axios");
+import axios from "@/utils/request.js";
 
 export default defineComponent({
   methods: {
@@ -297,7 +297,7 @@ export default defineComponent({
           label: "定点医院录入员",
         },
         {
-          value: "4",
+          value: "9",
           label: "定点医院管理员",
         },
       ],

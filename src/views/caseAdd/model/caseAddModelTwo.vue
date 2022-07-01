@@ -191,7 +191,7 @@
 import { defineComponent } from "vue";
 import dropDownList from "@/utils/dropDownList.js";
 import validator from "@/utils/validatorOther.js";
-
+import axios from "@/utils/request.js";
 export default defineComponent({
   setup() {
     return {};
@@ -356,7 +356,7 @@ export default defineComponent({
                   break;
               }
 
-              const result = await this.$axios.post(strurl, this.hos_one_info);
+              const result = await axios.post(strurl, this.hos_one_info);
               if (result.status === 200) {
                 this.$message.success("添加成功!");
                 this.submitLoading = false;

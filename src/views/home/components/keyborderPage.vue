@@ -73,7 +73,7 @@
 import { defineComponent, onMounted, reactive } from "vue";
 import * as echarts from "echarts";
 import { ElMessage } from "element-plus";
-const axios = require("axios");
+import axios from "@/utils/request.js";
 
 export default defineComponent({
   setup() {

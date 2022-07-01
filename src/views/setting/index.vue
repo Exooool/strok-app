@@ -54,7 +54,12 @@
 
     <PasswordManagement v-else />
 
-    <PowerDialog :userInfo="data.userInfo" v-model="data.powerChangeDialog" />
+    <!-- v-if使组件重新渲染 并重新加载传入的userinfo -->
+    <PowerDialog
+      :userInfo="data.userInfo"
+      v-model="data.powerChangeDialog"
+      v-if="data.powerChangeDialog"
+    />
 
     <AddUser v-model="data.addUserDialog" />
   </div>
@@ -65,7 +70,7 @@ import { defineComponent, onMounted, reactive, ref } from "vue";
 import PowerDialog from "./components/powerDialog.vue";
 import AddUser from "./components/addUser.vue";
 import PasswordManagement from "./components/passwordManagement.vue";
-const axios = require("axios");
+import axios from "@/utils/request.js";
 
 export default defineComponent({
   components: {

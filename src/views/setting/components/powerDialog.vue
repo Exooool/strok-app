@@ -1,6 +1,6 @@
 <template>
   <!-- 权限管理对话框 -->
-  <el-dialog :model-value="show" title="权限管理" width="80%" top="30vh">
+  <el-dialog title="权限管理" width="80%" top="30vh">
     <el-form>
       <el-form-item label="登录用户名">
         <el-input :value="userInfo?.username" disabled></el-input>
@@ -18,7 +18,7 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="sub()">确定调整</el-button>
-        <el-button>取消调整</el-button>
+        <el-button @click="close()">取消调整</el-button>
       </el-form-item>
     </el-form>
   </el-dialog>
@@ -26,12 +26,12 @@
 
 <script>
 import { ElMessage } from "element-plus";
-import { defineComponent, onMounted, reactive } from "vue";
-const axios = require("axios");
+import { defineComponent, reactive, watch } from "vue";
+import axios from "@/utils/request.js";
 
 export default defineComponent({
   props: {
-    show: Boolean,
+    role: String,
     userInfo: Object,
   },
   methods: {
@@ -72,8 +72,15 @@ export default defineComponent({
         });
       }
     },
+    close() {
+      this.$parent.closeDialog();
+    },
   },
   setup(props) {
+    watch(props.userInfo, (newValue, oldValue) => {
+      console.log("sum ==> ", newValue, oldValue);
+    });
+
     const data = reactive({
       // 权限
       jurisdictionOptions: [
@@ -91,11 +98,7 @@ export default defineComponent({
         },
       ],
       // 当前权限
-      power: "",
-    });
-
-    onMounted(() => {
-      data.power = props.userInfo?.role.toString();
+      power: props.userInfo.role.toString(),
     });
 
     return {

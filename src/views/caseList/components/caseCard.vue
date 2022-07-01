@@ -130,7 +130,7 @@ export default defineComponent({
   padding: 10px 15px;
   border-radius: 5px;
   margin-bottom: 20px;
-  box-shadow: 0px 3px 7px 1px #0000001a;
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.12);
 
   // 病人个人信息
   .patientInfo {

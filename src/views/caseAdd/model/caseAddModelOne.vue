@@ -824,7 +824,7 @@ import { defineComponent, reactive } from "vue";
 import dropDown from "@/utils/dropDown.js";
 import validator from "@/utils/validatorOther.js";
 import { ElMessage } from "element-plus";
-const axios = require("axios");
+import axios from "@/utils/request.js";
 
 export default defineComponent({
   computed: {

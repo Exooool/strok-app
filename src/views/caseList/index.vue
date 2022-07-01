@@ -107,7 +107,7 @@ import { defineComponent } from "vue";
 import { ElMessage } from "element-plus";
 // 病例卡片
 import CaseCard from "./components/caseCard.vue";
-const axios = require("axios");
+import axios from "@/utils/request.js";
 
 export default defineComponent({
   components: {
