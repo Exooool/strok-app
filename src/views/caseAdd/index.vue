@@ -1,39 +1,40 @@
 <template>
   <div class="cassAddPage">
-    <div class="content">
-      <div class="case-type">
-        <el-divider content-position="center">
-          <h3>请选择病例类型</h3>
-        </el-divider>
-      </div>
-      <ul>
-        <li v-for="item in data.caseTypeList" :key="item.id">
-          <div
-            @mouseenter="data.hoverIndex = item.id"
-            @mouseleave="data.hoverIndex = -1"
-            :class="
-              data.currentIndex === item.id ? 'box-active' : 'box-inactive'
-            "
-            @click="nextStep(item.id)"
-          >
-            <!--判断处于激活状态，是则用激活的样式图片，否则判断是否是鼠标划入，划入显示激活的图片，否则显示未激活的样式-->
-            <img
-              :src="
-                data.currentIndex === item.id
-                  ? item.activeImgSrc
-                  : data.hoverIndex === item.id
-                  ? item.activeImgSrc
-                  : item.inactiveImgSrc
+    <el-main>
+      <div class="content">
+        <!-- <div class="case-type">
+          <el-divider content-position="center">
+            <h3>请选择病例类型</h3>
+          </el-divider>
+        </div> -->
+        <ul>
+          <li v-for="item in data.caseTypeList" :key="item.id">
+            <div
+              @mouseenter="data.hoverIndex = item.id"
+              @mouseleave="data.hoverIndex = -1"
+              :class="
+                data.currentIndex === item.id ? 'box-active' : 'box-inactive'
               "
-              alt=""
-            />
-            <h3>{{ item.title }}</h3>
-            <p>{{ item.description }}</p>
-          </div>
-        </li>
-      </ul>
-    </div>
-    <!-- <router-view></router-view> -->
+              @click="nextStep(item.id)"
+            >
+              <!--判断处于激活状态，是则用激活的样式图片，否则判断是否是鼠标划入，划入显示激活的图片，否则显示未激活的样式-->
+              <img
+                :src="
+                  data.currentIndex === item.id
+                    ? item.activeImgSrc
+                    : data.hoverIndex === item.id
+                    ? item.activeImgSrc
+                    : item.inactiveImgSrc
+                "
+                alt=""
+              />
+              <h3>{{ item.title }}</h3>
+              <p>{{ item.description }}</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </el-main>
   </div>
 </template>
 
@@ -49,10 +50,8 @@ export default defineComponent({
     const data = reactive({
       // 鼠标划入index
       hoverIndex: "",
-      // 当前已点击的index
+      // 当前已点击的病例
       currentIndex: "",
-      // 已选病例类型
-      selectedType: "",
       openTypeList: [1, 2, 3, 4, 5, 6, 7, 8, 9],
       // 暂未开放
       unOpenTypeList: [],
@@ -131,15 +130,14 @@ export default defineComponent({
     });
 
     const nextStep = (_id) => {
-      data.selectedType = _id;
       data.currentIndex = _id;
-      if (data.openTypeList.indexOf(data.selectedType) > -1) {
+      if (data.openTypeList.indexOf(data.currentIndex) > -1) {
         // this.$router.push('/case-increase/' + this.selectedType)
-        if (data.selectedType <= 2) router.push("/caseAddModelOne");
+        if (data.currentIndex <= 2) router.push("/caseAddModelOne/" + _id);
         else {
-          router.push("/caseAddModelTwo");
+          router.push("/caseAddModelTwo/" + _id);
         }
-      } else if (data.unOpenTypeList.indexOf(data.selectedType) > -1) {
+      } else if (data.unOpenTypeList.indexOf(data.currentIndex) > -1) {
         ElMessage.warning("暂未开放 ！");
       } else {
         ElMessage.warning("请先选择病例类型 ！");
@@ -156,6 +154,11 @@ export default defineComponent({
 
 <style lang="scss">
 .cassAddPage {
+  position: relative;
+  height: 100%;
+  .el-main {
+    height: 100%;
+  }
   .content {
     background: #fff;
     box-shadow: -1px 1px 20px 0 rgba(59, 55, 85, 0.03);
@@ -182,59 +185,53 @@ export default defineComponent({
       li {
         // flex: 1;
         list-style: none;
-        margin: 20px;
+        width: 30%;
+        margin: 10px auto;
+        z-index: 100;
 
         .box-inactive {
-          width: 240px;
-          height: 200px;
-          padding: 32px 20px 27px;
           box-sizing: border-box;
           background: #f5f5f5;
           border-radius: 12px;
           text-align: center;
+          height: 150px;
+          padding: 5px;
 
           h3 {
-            margin-top: 36px;
-            font: bold 24px/1 "PingFang SC";
+            font: bold 16px/1 "PingFang SC";
             color: #333;
           }
 
           p {
-            margin-top: 18px;
             overflow: hidden; //超出的文本隐藏
             text-overflow: ellipsis; //溢出用省略号显示
             white-space: nowrap; //溢出不换行
-            font: 400 14px/1 "Microsoft YaHei";
+            font: 400 12px/1 "Microsoft YaHei";
             color: #999;
           }
         }
 
         .box-active {
           color: #fff;
-          width: 240px;
-          height: 200px;
           cursor: pointer;
           background: #426bba;
-          padding: 32px 20px 27px;
           box-sizing: border-box;
           border-radius: 12px;
+          height: 150px;
+          padding: 5px;
           text-align: center;
 
           h3 {
-            margin-top: 36px;
-            font: bold 24px/1 "PingFang SC";
+            font: bold 16px/1 "PingFang SC";
             color: #fff;
           }
 
           p {
-            margin-top: 18px;
-            font: 400 14px/1 "Microsoft YaHei";
+            font: 400 12px/1 "Microsoft YaHei";
             color: #fff;
-            line-height: 28px;
-            height: auto;
-            word-break: break-all;
-            white-space: pre-wrap;
-            text-decoration: none;
+            overflow: hidden; //超出的文本隐藏
+            text-overflow: ellipsis; //溢出用省略号显示
+            white-space: nowrap; //溢出不换行
           }
         }
 

@@ -1,14 +1,14 @@
 <template>
-  <div class="caseListPage">
+  <div class="caseListPage" ref="caseListPage">
     <!-- 病例筛选 -->
-    <div class="caseFilter">
+    <div class="caseFilter" ref="caseFilter">
       <div class="filterOption">
-        <div class="title">病例类型:</div>
+        <!-- <div class="title">病例类型:</div> -->
         <div class="optionsRow">
           <el-select
             v-model="caseType"
             @change="caseTypeChangeHandler(caseType)"
-            style="width: 150px"
+            style="width: 150px; margin-right: 5px"
           >
             <el-option
               v-for="item in case_type_choices"
@@ -23,7 +23,7 @@
             collapse-tags
             v-model="followUp"
             v-if="caseType === 1 || caseType === 100 || caseType === 2"
-            style="width: 150px; margin-left: 10px"
+            style="width: 150px; margin-right: 10px"
           >
             <el-option
               v-for="item in followUpOptions"
@@ -36,21 +36,23 @@
         </div>
         <div class="optionsRow">
           <el-input
-            style="width: 200px"
+            style="width: 200px; margin-right: 5px"
             v-model="inputData"
             placeholder="请输入患者姓名"
           ></el-input>
-          <el-select
-            v-model="SearchTimeSelect"
-            v-if="caseType === 1 || caseType === 100 || caseType === 2"
-            style="width: 120px; margin-left: 10px"
-          >
-            <el-option label="发病时间" value="1"> </el-option>
-            <el-option label="出院时间" value="2"> </el-option>
-            <el-option label="登记时间" value="3"> </el-option>
-          </el-select>
+          <div v-if="searchListSwitch" style="display: inline">
+            <el-select
+              v-model="SearchTimeSelect"
+              v-if="caseType === 1 || caseType === 100 || caseType === 2"
+              style="width: 120px; margin-right: 10px"
+            >
+              <el-option label="发病时间" value="1"> </el-option>
+              <el-option label="出院时间" value="2"> </el-option>
+              <el-option label="登记时间" value="3"> </el-option>
+            </el-select>
+          </div>
         </div>
-        <div class="optionsRow">
+        <div class="optionsRow" v-if="searchListSwitch">
           <el-date-picker
             v-model="selectTime[0]"
             type="date"
@@ -70,7 +72,10 @@
           </el-date-picker>
         </div>
 
-        <el-button type="primary" @click="handleCurrentChange()"
+        <el-button
+          style="margin-right: 5px"
+          type="primary"
+          @click="getCaseList()"
           >查询</el-button
         >
         <el-button
@@ -82,13 +87,27 @@
         >
           导出数据表
         </el-button>
+        <div class="packUpBox" @click="changeSearchList()">
+          <span>{{ searchListSwitch ? "收起" : "展开" }}</span>
+          <el-icon>
+            <ArrowUp v-if="searchListSwitch" /> <ArrowDown v-else />
+          </el-icon>
+        </div>
       </div>
     </div>
-    <div class="listContent">
+    <ul
+      class="listContent"
+      ref="listContent"
+      v-infinite-scroll="scrollLoad"
+      style="overflow: auto"
+      :infinite-scroll-immediate="false"
+      infinite-scroll-distance="20"
+    >
       <CaseCard
         v-for="(item, index) in administratorsDatalist"
         :key="index"
         :name="item.Name"
+        :id="item.Id"
         :sex="item.Sex"
         :age="item.Age"
         :time="item.InputTime"
@@ -96,9 +115,15 @@
         :status="item.status_id"
         :visitStatus90="item.VisitStatus90"
         :visitStatus180="item.VisitStatus180"
+        @eventIsNum="deleteThis"
       ></CaseCard>
-      <div v-if="administratorsDatalist.length === 0">未查询到数据</div>
-    </div>
+      <!-- 列表空展示 -->
+      <el-empty v-if="administratorsDatalist.length === 0" description="空" />
+      <!-- 列表加载展示 -->
+      <div v-if="loading" v-loading="true"></div>
+      <!-- 列表加载完末尾展示 -->
+      <div v-if="noMore" class="noMore">没有更多了~</div>
+    </ul>
   </div>
 </template>
 
@@ -113,297 +138,22 @@ export default defineComponent({
   components: {
     CaseCard,
   },
-  mounted() {
-    if (this.role === 99) {
-      this.MGetCaseList();
-    }
-    // else if (this.caseType === 1 || this.caseType === 2 || this.caseType === 100)
-    else {
-      this.getStrokeMapInfoCaseList();
-    }
+  computed: {
+    // 计算是否获取完所有数据
+    noMore() {
+      return this.administratorsDatalist.length === this.pageInfo.total;
+    },
   },
-  methods: {
-    completeStatus: function (item) {
-      console.info(item);
-      if (
-        item.info1_no_complete == 0 &&
-        item.info2_no_complete == 0 &&
-        item.info3_no_complete == 0 &&
-        item.info4_no_complete == 0 &&
-        item.info5_no_complete == 0
-      ) {
-        return 0; //完成所有必填项
-      } else if (
-        item.info1_no_complete == 0 &&
-        item.info2_no_complete == 0 &&
-        item.info3_no_complete == 0
-      ) {
-        return 1; //完成在院信息必填项
-      } else {
-        return 9; //未完成必填项
-      }
-    },
-    completeStatusStr: function (item) {
-      let str = "";
-      if (
-        item.info1_no_complete == 0 &&
-        item.info2_no_complete == 0 &&
-        item.info3_no_complete == 0
-      ) {
-        if (item.info4_no_complete > 0)
-          str = "90天随访未完成项为：" + item.info4_no_complete + ",";
-        if (item.info5_no_complete > 0)
-          str += "180天随访未完成项为：" + item.info5_no_complete;
-      } else {
-        if (item.info1_no_complete > 0)
-          str = "在院信息1未完成项为：" + item.info1_no_complete + ",";
-        if (item.info2_no_complete > 0)
-          str += "在院信息2未完成项为：" + item.info2_no_complete + ",";
-        if (item.info3_no_complete > 0)
-          str += "出院信息未完成项为：" + item.info3_no_complete + ",";
-        if (item.info4_no_complete > 0)
-          str += "90天随访未完成项为：" + item.info4_no_complete + ",";
-        if (item.info5_no_complete > 0)
-          str += "180天随访未完成项为：" + item.info5_no_complete;
-      }
-      return str;
-    },
-    // 序号显示
-    indexMethod(index) {
-      return (
-        (this.pageInfo.currentPage - 1) * this.pageInfo.pageSize + index + 1
-      );
-    },
-    /**
-     * 跳转病例详情页
-     * @param id
-     */
-    // 跳转到病例详情页面
-    detailInfo(id) {
-      localStorage.setItem("currentPage", this.pageInfo.currentPage + "");
-      this.$router.push(`/case-list/${this.caseType}/${id}`);
-    },
-    // 切换病例列表页面
-    handleCurrentChange() {
-      if (this.role === 99) {
-        this.MGetCaseList();
-      }
-      // else if (this.caseType === 1 || this.caseType === 2 || this.caseType === 100)
-      else {
-        this.getStrokeMapInfoCaseList();
-      }
-      // else {
-      //   this.getCaseList()
-      // }
-    },
-    // 一些token的获取
-    async preGetCaseList() {
-      let reToken = window.localStorage.getItem("refresh").toString();
-      reToken = reToken.replace('"', "").replace('"', "");
-      const resrefresh = await axios.post("/api/auth/login/refresh/", {
-        refresh: reToken,
-      });
-      localStorage.setItem(
-        "access_token",
-        JSON.stringify(resrefresh.data.access)
-      );
-      let access_token = window.localStorage.getItem("access_token").toString();
-      access_token = access_token.replace('"', "").replace('"', "");
-      this.token = "Bearer" + " " + access_token;
-    },
-    // 导出Excel表
-    exportExcel() {
-      // if(this.selectTime !== null) {
-
-      // } else {
-      //   window.location.href = '/peng/Emr/Export'
-      // }
-      window.location.href =
-        "/peng/Emr/Export?EmrType=" +
-        this.caseType +
-        "&UserId=" +
-        localStorage.getItem("user_pk") +
-        "&WorkUnit=" +
-        localStorage.getItem("work_unit");
-    },
-    // ########################################################################管理员函数
-    // 99获取病例列表
-    MGetCaseList() {
-      let obj = {
-        Page: 1,
-        Limit: 12,
-        Where: {
-          EmrType: "",
-          WorkUnit: "",
-          VisitStatus: 0,
-          PatientName: "",
-          SearchTimeSelect: "",
-          StartDate: "",
-          EndDate: "",
-        },
-      };
-      obj.Page = this.pageInfo.currentPage;
-      obj.Where.EmrType = this.caseType + "";
-      obj.Where.WorkUnit = localStorage.getItem("caseHospitalSelection");
-      obj.Where.PatientName = this.inputData;
-      obj.Where.VisitStatus = this.followUp ? this.followUp : 0;
-      obj.Where.SearchTimeSelect = this.SearchTimeSelect;
-      if (this.selectTime && this.selectTime.length > 1) {
-        obj.Where.StartDate = this.selectTime[0];
-        obj.Where.EndDate = this.selectTime[1];
-      }
-      console.log(obj);
-      this.loading = true;
-      axios({
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "post",
-        url: "/peng/Emr/Page",
-        data: JSON.stringify(obj),
-      })
-        .then((res) => {
-          console.log(res);
-          this.loading = false;
-          this.administratorsDatalist = res.data.data;
-          if (
-            this.caseType !== 1 &&
-            this.caseType !== 2 &&
-            this.caseType !== 100
-          ) {
-            this.administratorsDatalist.forEach((item) => {
-              item.Diagnosis = eval(item.Diagnosis)[0];
-            });
-          }
-          this.pageInfo.total = res.data.total;
-        })
-        .catch(() => {
-          this.loading = false;
-          ElMessage.error("请求数据失败");
-        });
-    },
-    // 非99获取病例列表
-    async getStrokeMapInfoCaseList() {
-      let obj = {
-        Page: 1,
-        Limit: 12,
-        Where: {
-          UserId: "",
-          EmrType: "",
-          WorkUnit: "",
-          VisitStatus: 0,
-          PatientName: "",
-          SearchTimeSelect: "",
-          StartDate: "",
-          EndDate: "",
-        },
-      };
-      obj.Page = this.pageInfo.currentPage;
-      obj.Where.EmrType = this.caseType + "";
-      obj.Where.WorkUnit = localStorage.getItem("work_unit");
-      obj.Where.UserId = localStorage.getItem("user_pk");
-      obj.Where.PatientName = this.inputData;
-      obj.Where.SearchTimeSelect = this.SearchTimeSelect;
-      obj.Where.VisitStatus = this.followUp ? this.followUp : 0;
-      if (this.selectTime && this.selectTime.length > 1) {
-        obj.Where.StartDate = this.selectTime[0];
-        obj.Where.EndDate = this.selectTime[1];
-      }
-      console.log(obj);
-      this.loading = true;
-      axios({
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "post",
-        url: "/peng/Emr/Page",
-        data: JSON.stringify(obj),
-      })
-        .then((res) => {
-          this.loading = false;
-          this.administratorsDatalist = res.data.data;
-          this.pageInfo.total = res.data.total;
-        })
-        .catch((e) => {
-          console.info("错误：" + e);
-          this.loading = false;
-          ElMessage.error("请求数据失败");
-        });
-    },
-    // 病例类型的切换
-    caseTypeChangeHandler(_type) {
-      // this.$nextTick(() => {
-      //   this.$refs.pagination.internalCurrentPage = 1;
-      // });
-      this.$router.push(`/caseList/${_type}`);
-      if (this.role === 99) {
-        this.MGetCaseList();
-      } else {
-        this.getStrokeMapInfoCaseList();
-      }
-    },
-    search() {
-      this.newCaseList = [];
-      if (this.formData.name === "") {
-        this.newCaseList = this.caseList;
-      } else {
-        this.newCaseList = this.caseList.filter((item) => {
-          return (
-            item.name.includes(this.formData.name) |
-            this.enums.sex[item.sex].includes(this.formData.name) |
-            (item.age + "").includes(this.formData.name)
-          );
-        });
-      }
-      console.log(this.newCaseList);
-    },
-    // 删除前面2个表中病例
-    async deleteThis(id) {
-      if (this.strokeMapInfoList.length === 1) {
-        this.$nextTick(() => {
-          this.$refs.pagination.internalCurrentPage =
-            this.$refs.pagination.internalCurrentPage - 1;
-        });
-      }
-      let url = "/peng/StrokeMapInfo/Delete";
-      switch (this.caseType) {
-        case 3:
-          url = "/peng/SichInfo/Delete";
-          break;
-        case 4:
-          url = "/peng/AnRInfo/Delete";
-          break;
-        case 5:
-          url = "/peng/AvmrInfo/Delete";
-          break;
-        case 6:
-          url = "/peng/AnInfo/Delete";
-          break;
-        case 7:
-          url = "/peng/AvmInfo/Delete";
-          break;
-        case 8:
-          url = "/peng/EcsInfo/Delete";
-          break;
-        case 9:
-          url = "/peng/IcsInfo/Delete";
-          break;
-        default:
-      }
-      let param = { id: id };
-      console.info(param);
-      const res = await axios.post(url, param);
-      if (res.status === 200) {
-        ElMessage.success("删除成功!");
-        await this.getStrokeMapInfoCaseList();
-      } else {
-        ElMessage.error("删除失败!");
-      }
-    },
+  mounted() {
+    // 初始化列表
+    this.getCaseList();
+    // 计算listContent的高度
+    this.calculateHeight();
   },
   data() {
     return {
       SearchTimeSelect: "1",
+      searchListSwitch: false,
       followUp: 0, //随访信息选择
       followUpOptions: [
         {
@@ -490,7 +240,7 @@ export default defineComponent({
       pageInfo: {
         pageSize: 12,
         total: 0,
-        currentPage: Number(localStorage.getItem("currentPage")) || 1,
+        page: 1,
       },
       token: null,
       formData: {
@@ -599,27 +349,261 @@ export default defineComponent({
       ],
     };
   },
-  setup() {
-    // todo
-    return {};
+  methods: {
+    scrollLoad() {
+      if (
+        this.pageInfo.total !== 0 &&
+        Math.round(this.pageInfo.total / 12) >= this.pageInfo.page
+      ) {
+        this.loading = true;
+        this.getCaseList();
+        this.pageInfo.page += 1;
+      }
+
+      // console.log(this.pageInfo.page);
+    },
+    changeSearchList() {
+      this.searchListSwitch = !this.searchListSwitch;
+      this.$nextTick(function () {
+        this.calculateHeight();
+      });
+    },
+    // 计算listContent的高度
+    calculateHeight() {
+      const height =
+        this.$refs.caseListPage.offsetHeight -
+        this.$refs.caseFilter.offsetHeight +
+        "px";
+      this.$refs.listContent.style.height = height;
+    },
+    // 切换病例列表页面
+    getCaseList() {
+      if (this.role === 99) {
+        this.MGetCaseList();
+      }
+      // else if (this.caseType === 1 || this.caseType === 2 || this.caseType === 100)
+      else {
+        this.getStrokeMapInfoCaseList();
+      }
+    },
+    // 导出Excel表
+    exportExcel() {
+      window.location.href =
+        "/peng/Emr/Export?EmrType=" +
+        this.caseType +
+        "&UserId=" +
+        localStorage.getItem("user_pk") +
+        "&WorkUnit=" +
+        localStorage.getItem("work_unit");
+    },
+    // ########################################################################管理员函数
+    // 99获取病例列表
+    MGetCaseList() {
+      let obj = {
+        Page: 1,
+        Limit: 12,
+        Where: {
+          EmrType: "",
+          WorkUnit: "",
+          VisitStatus: 0,
+          PatientName: "",
+          SearchTimeSelect: "",
+          StartDate: "",
+          EndDate: "",
+        },
+      };
+      obj.Page = this.pageInfo.page;
+      obj.Where.EmrType = this.caseType + "";
+      obj.Where.WorkUnit = localStorage.getItem("caseHospitalSelection");
+      obj.Where.PatientName = this.inputData;
+      obj.Where.VisitStatus = this.followUp ? this.followUp : 0;
+      obj.Where.SearchTimeSelect = this.SearchTimeSelect;
+      if (this.selectTime && this.selectTime.length > 1) {
+        obj.Where.StartDate = this.selectTime[0];
+        obj.Where.EndDate = this.selectTime[1];
+      }
+      console.log(obj);
+      axios({
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "post",
+        url: "/peng/Emr/Page",
+        data: JSON.stringify(obj),
+      })
+        .then((res) => {
+          console.log(res);
+          this.loading = false;
+          this.administratorsDatalist = res.data.data;
+          if (
+            this.caseType !== 1 &&
+            this.caseType !== 2 &&
+            this.caseType !== 100
+          ) {
+            this.administratorsDatalist.forEach((item) => {
+              item.Diagnosis = eval(item.Diagnosis)[0];
+            });
+          }
+          this.pageInfo.total = res.data.total;
+        })
+        .catch(() => {
+          this.loading = false;
+          ElMessage.error("请求数据失败");
+        });
+    },
+    // 非99获取病例列表
+    async getStrokeMapInfoCaseList() {
+      let obj = {
+        Page: 1,
+        Limit: 12,
+        Where: {
+          UserId: "",
+          EmrType: "",
+          WorkUnit: "",
+          VisitStatus: 0,
+          PatientName: "",
+          SearchTimeSelect: "",
+          StartDate: "",
+          EndDate: "",
+        },
+      };
+      obj.Page = this.pageInfo.page;
+      obj.Where.EmrType = this.caseType + "";
+      obj.Where.WorkUnit = localStorage.getItem("work_unit");
+      obj.Where.UserId = localStorage.getItem("user_pk");
+      obj.Where.PatientName = this.inputData;
+      obj.Where.SearchTimeSelect = this.SearchTimeSelect;
+      obj.Where.VisitStatus = this.followUp ? this.followUp : 0;
+      if (this.selectTime && this.selectTime.length > 1) {
+        obj.Where.StartDate = this.selectTime[0];
+        obj.Where.EndDate = this.selectTime[1];
+      }
+      // console.log(obj);
+      axios({
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "post",
+        url: "/peng/Emr/Page",
+        data: JSON.stringify(obj),
+      })
+        .then((res) => {
+          console.log(res);
+          this.loading = false;
+          if (this.pageInfo.page !== 1) {
+            this.administratorsDatalist = this.administratorsDatalist.concat(
+              res.data.data
+            );
+          } else {
+            this.administratorsDatalist = res.data.data;
+          }
+
+          this.pageInfo.total = res.data.total;
+        })
+        .catch((e) => {
+          console.info("错误：" + e);
+          this.loading = false;
+          ElMessage.error("请求数据失败");
+        });
+    },
+    // 病例类型的切换
+    caseTypeChangeHandler(_type) {
+      // 重置page页数为1
+      this.pageInfo.page = 1;
+      // 将滚动条重置
+      this.$refs.listContent.scrollTop = 0;
+
+      this.$router.push(`/caseList/${_type}`);
+      if (this.role === 99) {
+        this.MGetCaseList();
+      } else {
+        this.getStrokeMapInfoCaseList();
+      }
+    },
+    // 删除前面2个表中病例
+    async deleteThis(id) {
+      if (this.strokeMapInfoList.length === 1) {
+        this.$nextTick(() => {
+          this.$refs.pagination.internalCurrentPage =
+            this.$refs.pagination.internalCurrentPage - 1;
+        });
+      }
+      let url = "/peng/StrokeMapInfo/Delete";
+      switch (this.caseType) {
+        case 3:
+          url = "/peng/SichInfo/Delete";
+          break;
+        case 4:
+          url = "/peng/AnRInfo/Delete";
+          break;
+        case 5:
+          url = "/peng/AvmrInfo/Delete";
+          break;
+        case 6:
+          url = "/peng/AnInfo/Delete";
+          break;
+        case 7:
+          url = "/peng/AvmInfo/Delete";
+          break;
+        case 8:
+          url = "/peng/EcsInfo/Delete";
+          break;
+        case 9:
+          url = "/peng/IcsInfo/Delete";
+          break;
+        default:
+      }
+      let param = { id: id };
+      console.info(param);
+      const res = await axios.post(url, param);
+      if (res.status === 200) {
+        ElMessage.success("删除成功!");
+        await this.getStrokeMapInfoCaseList();
+      } else {
+        ElMessage.error("删除失败!");
+      }
+    },
   },
 });
 </script>
 
 <style lang="scss" scoped>
 .caseListPage {
+  height: 100%;
+  box-sizing: border-box;
+  position: relative;
   // 病例过滤
   .caseFilter {
-    margin-bottom: 10px;
+    background-color: white;
+    z-index: 100;
+    padding: 10px 20px;
     .title {
       margin-bottom: 5px;
     }
     .optionsRow {
+      display: inline-block;
       margin-bottom: 5px;
     }
   }
   // 病例列表内容
   .listContent {
+    padding: 5px 20px;
+    margin: 0;
+    list-style: none;
+    overflow: auto;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  // 列表展开
+  .packUpBox {
+    display: inline;
+  }
+
+  .noMore {
+    width: 100%;
+    text-align: center;
+    color: rgb(193, 193, 193);
   }
 }
 </style>

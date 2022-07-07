@@ -1,7 +1,13 @@
 <template>
   <div class="navBar">
-    <el-icon v-if="route.meta.canBack" @click="routerBack()"><Back /></el-icon>
-    <span class="title">{{ route.meta.title }}</span>
+    <el-icon class="backIcon" v-if="route.meta.canBack" @click="routerBack()"
+      ><Back
+    /></el-icon>
+    <span class="title" v-if="route.params.type">
+      {{ route.params.type ? caseTypeList[route.params.type] : "" }}
+    </span>
+    <span class="title" v-else>{{ route.meta.title }} </span>
+    <span class="logout" @click="logout()">退出</span>
   </div>
 </template>
 
@@ -16,14 +22,38 @@ export default defineComponent({
   setup() {
     const route = useRoute();
     const router = useRouter();
+    const caseTypeList = {
+      100: "缺血性脑血管病",
+      1: "短暂性脑缺血发作",
+      2: "脑梗死",
+      3: "自发性脑出血",
+      4: "动脉瘤破裂（AnR）",
+      5: "动静脉畸形破裂（AVMR）",
+      6: "动脉瘤未破裂（An）",
+      7: "动静脉畸形未破裂（AVM）",
+      8: "颅外动脉狭窄（ECS）",
+      9: "颅内动脉狭窄（ICS）",
+    };
     console.log(route);
 
     const routerBack = () => {
       router.back();
     };
+
+    const logout = () => {
+      localStorage.removeItem("access_token");
+      localStorage.clear();
+      let vuex = JSON.parse(localStorage.getItem("vuex"));
+      if (vuex !== null) {
+        localStorage.removeItem("vuex");
+      }
+      router.push("/login");
+    };
     return {
       route,
+      caseTypeList,
       routerBack,
+      logout,
     };
   },
 });
@@ -45,6 +75,9 @@ export default defineComponent({
   z-index: 2000;
   // box-shadow: 6px 6px 40px 0px #0000007d;
   // box-shadow: 4px 4px 10px 0px #00000054;
+  .backIcon {
+    margin-right: 10px;
+  }
   .title {
     // margin-left: 20px;
   }

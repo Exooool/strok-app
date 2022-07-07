@@ -1,7 +1,9 @@
 <template>
   <div class="homePage">
-    <AdministratorPage v-if="false"></AdministratorPage>
-    <KeyborderPage v-else></KeyborderPage>
+    <el-main>
+      <AdministratorPage v-if="role === '99'"></AdministratorPage>
+      <KeyborderPage v-else></KeyborderPage>
+    </el-main>
   </div>
 </template>
 

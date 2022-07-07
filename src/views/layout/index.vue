@@ -2,10 +2,8 @@
   <div class="layoutPage">
     <!-- 导航头 -->
     <NavBar :title="'主页'"></NavBar>
-    <el-main>
-      <!-- Main content -->
-      <router-view></router-view>
-    </el-main>
+    <!-- Main content -->
+    <router-view></router-view>
     <!-- 底部菜单栏 -->
     <MenuBar></MenuBar>
   </div>
@@ -30,10 +28,9 @@ export default defineComponent({
 <style lang="scss" scoped>
 .layoutPage {
   height: 100vh;
+  box-sizing: border-box;
   position: relative;
-  .el-main {
-    padding-top: 70px;
-    padding-bottom: 70px;
-  }
+  padding-top: 50px;
+  padding-bottom: 70px;
 }
 </style>

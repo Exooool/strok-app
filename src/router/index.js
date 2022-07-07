@@ -37,7 +37,7 @@ const routes = [
         },
       },
       {
-        path: "/caseDetail",
+        path: "/caseList/:type/:id",
         name: "caseDetail",
         component: () => import("../views/caseList/caseDetail/index.vue"),
         meta: {
@@ -57,22 +57,22 @@ const routes = [
         },
       },
       {
-        path: "/caseAddModelOne",
+        path: "/caseAddModelOne/:type",
         name: "caseAddModelOne",
         component: () => import("../views/caseAdd/model/caseAddModelOne.vue"),
         meta: {
           routerIndex: 2,
-          title: "病例新增1",
+          title: "病例新增",
           canBack: true,
         },
       },
       {
-        path: "/caseAddModelTwo",
+        path: "/caseAddModelTwo/:type",
         name: "caseAddModelTwo",
         component: () => import("../views/caseAdd/model/caseAddModelTwo.vue"),
         meta: {
           routerIndex: 2,
-          title: "病例新增2",
+          title: "病例新增",
           canBack: true,
         },
       },

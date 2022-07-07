@@ -1,67 +1,69 @@
 <template>
   <div class="settingPage">
-    <el-menu mode="horizontal" :default-active="index" @select="handleSelect">
-      <el-menu-item index="1">用户权限管理</el-menu-item>
-      <el-menu-item index="2">用户密码修改</el-menu-item>
-    </el-menu>
+    <el-main>
+      <el-menu mode="horizontal" :default-active="index" @select="handleSelect">
+        <el-menu-item index="1">用户权限管理</el-menu-item>
+        <el-menu-item index="2">用户密码修改</el-menu-item>
+      </el-menu>
 
-    <div class="powerManagement" v-if="index === '1'">
-      <div>
-        <h3>权限管理</h3>
-      </div>
-      <el-main>
-        <div class="searchBox">
-          <el-input
-            v-model="data.searchName"
-            placeholder="请输入姓名或用户名"
-            clearable
-          ></el-input>
-          <el-button type="primary" @click="GetUserList()">查询</el-button>
-          <el-button type="primary" @click="addUser()">新增用户</el-button>
+      <div class="powerManagement" v-if="index === '1'">
+        <div>
+          <h3>权限管理</h3>
         </div>
-        <el-table :data="data.tableData" border stripe>
-          <el-table-column
-            type="index"
-            label="序号"
-            :index="indexMethod"
-            width="60"
-          />
-          <el-table-column prop="username" label="用户名"></el-table-column>
-          <el-table-column prop="real_name" label="姓名"></el-table-column>
-          <el-table-column label="权限" width="100">
-            <template #default="scope">
-              <span
-                :style="{ color: data.roleColor[scope.row.role.toString()] }"
-                >{{ data.jurisdiction[scope.row.role.toString()] }}</span
-              >
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="work_unit"
-            label="单位"
-            width="200"
-          ></el-table-column>
-          <el-table-column label="权限管理" width="120">
-            <template #default="scope">
-              <el-button type="primary" @click="dialogShow(scope.row)"
-                >权限管理</el-button
-              >
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-main>
-    </div>
+        <el-main>
+          <div class="searchBox">
+            <el-input
+              v-model="data.searchName"
+              placeholder="请输入姓名或用户名"
+              clearable
+            ></el-input>
+            <el-button type="primary" @click="GetUserList()">查询</el-button>
+            <el-button type="primary" @click="addUser()">新增用户</el-button>
+          </div>
+          <el-table :data="data.tableData" border stripe>
+            <el-table-column
+              type="index"
+              label="序号"
+              :index="indexMethod"
+              width="60"
+            />
+            <el-table-column prop="username" label="用户名"></el-table-column>
+            <el-table-column prop="real_name" label="姓名"></el-table-column>
+            <el-table-column label="权限" width="100">
+              <template #default="scope">
+                <span
+                  :style="{ color: data.roleColor[scope.row.role.toString()] }"
+                  >{{ data.jurisdiction[scope.row.role.toString()] }}</span
+                >
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="work_unit"
+              label="单位"
+              width="200"
+            ></el-table-column>
+            <el-table-column label="权限管理" width="120">
+              <template #default="scope">
+                <el-button type="primary" @click="dialogShow(scope.row)"
+                  >权限管理</el-button
+                >
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-main>
+      </div>
 
-    <PasswordManagement v-else />
+      <PasswordManagement v-else />
 
-    <!-- v-if使组件重新渲染 并重新加载传入的userinfo -->
-    <PowerDialog
-      :userInfo="data.userInfo"
-      v-model="data.powerChangeDialog"
-      v-if="data.powerChangeDialog"
-    />
+      <!-- v-if使组件重新渲染 并重新加载传入的userinfo -->
+      <PowerDialog
+        :userInfo="data.userInfo"
+        v-model="data.powerChangeDialog"
+        v-if="data.powerChangeDialog"
+      />
 
-    <AddUser v-model="data.addUserDialog" />
+      <AddUser v-model="data.addUserDialog" />
+    </el-main>
   </div>
 </template>
 

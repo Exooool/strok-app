@@ -1,31 +1,36 @@
 <template>
   <div class="caseDetail">
-    <NavBar></NavBar>
     <el-main>
-      <inHospitalInfo1></inHospitalInfo1>
+      <caseDetailModelOneVue v-if="type === '1' || type === '100'" />
+      <caseDetailModelTwoVue v-else />
     </el-main>
+    <el-main> </el-main>
   </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
-import NavBar from "../../layout/components/navBar.vue";
-import inHospitalInfo1 from "./components/inHospitalInfo1.vue";
+import { useRoute } from "vue-router";
+import caseDetailModelOneVue from "./model/caseDetailModelOne.vue";
+import caseDetailModelTwoVue from "./model/caseDetailModelTwo.vue";
 
 export default defineComponent({
   components: {
-    NavBar,
-    inHospitalInfo1,
+    caseDetailModelOneVue,
+    caseDetailModelTwoVue,
   },
   setup() {
-    // todo
-    return {};
+    const route = useRoute();
+    const type = route.params.type;
+    // console.log(type);
+    return {
+      type,
+    };
   },
 });
 </script>
 
 <style lang="scss" scoped>
 .caseDetail {
-  height: 100vh;
 }
 </style>

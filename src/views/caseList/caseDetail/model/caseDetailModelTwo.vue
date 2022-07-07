@@ -9,11 +9,11 @@
                 v-loading="submitLoading"
                 element-loading-spinner="el-icon-loading"
                 element-loading-text="正在保存"
-                label-position="right"
-                ref="ruleForm"
+                label-position="left"
+                ref="hos_one_info"
                 :inline="true"
                 :rules="rules"
-                label-width="120px"
+                label-width="160px"
                 :model="hos_one_info"
               >
                 <el-form-item
@@ -122,6 +122,48 @@
                     </el-option>
                   </el-select>
                 </el-form-item>
+                <el-form-item
+                  v-if="
+                    hos_one_info.basic_disease_history &&
+                    hos_one_info.basic_disease_history.indexOf(99) > -1
+                  "
+                  class="required"
+                  prop="basic_disease_history_else"
+                  label="其他基础病史"
+                >
+                  <el-input
+                    clearable
+                    v-model.trim="hos_one_info.basic_disease_history_else"
+                    maxlength="32"
+                  >
+                  </el-input>
+                </el-form-item>
+                <el-form-item
+                  class="required"
+                  prop="systolic_blood_pressure"
+                  label="收缩压"
+                >
+                  <el-input
+                    placeholder="20~300"
+                    clearable
+                    v-model.trim="hos_one_info.systolic_blood_pressure"
+                    maxlength="32"
+                  >
+                  </el-input>
+                </el-form-item>
+                <el-form-item
+                  class="required"
+                  prop="diastolic_blood_pressure"
+                  label="舒张压"
+                >
+                  <el-input
+                    placeholder="20~300"
+                    clearable
+                    v-model.trim="hos_one_info.diastolic_blood_pressure"
+                    maxlength="32"
+                  >
+                  </el-input>
+                </el-form-item>
               </el-form>
             </div>
           </div>
@@ -208,12 +250,72 @@ export default defineComponent({
         diastolic_blood_pressure: null,
         users_id: null,
       },
+      requestApi: {
+        // 脑梗死
+        2: "/peng/StrokeMapInfo/Get",
+        // 自发性脑出血
+        3: "/peng/SichInfo/Get",
+        // 动脉瘤破裂
+        4: "/peng/AnRInfo/Get",
+        // 动静脉畸形破裂
+        5: "/peng/AvmrInfo/Get",
+        // 动脉瘤未破裂
+        6: "/peng/AnInfo/Get",
+        // 动静脉畸形未破裂
+        7: "/peng/AvmInfo/Get",
+      },
     });
     return {
       ...toRefs(data),
     };
   },
+  mounted() {
+    this.getCaseDetails();
+  },
   methods: {
+    async getCaseDetails() {
+      let param = { id: this.$route.params.id };
+      await axios
+        .post(this.requestApi[this.$route.params.type], param)
+        .then((res) => {
+          console.log(res);
+          Object.keys(this.hos_one_info).forEach((key) => {
+            if (key == "first_diagnosis_result" && !res.data.data[key]) {
+              this.hos_one_info[key] = 1;
+            } else if (key == "inter_know_choice" && !res.data.data[key]) {
+              this.hos_one_info[key] = 1;
+            } else if (key == "throm_know_choice" && !res.data.data[key]) {
+              this.hos_one_info[key] = 1;
+            } else {
+              this.hos_one_info[key] = res.data.data[key];
+            }
+          });
+          this.submitLoading = false;
+        });
+    },
+    switchTitle(type) {
+      switch (type) {
+        case 1:
+          return "病例新增(短暂性脑缺血发作)";
+        case 2:
+          return "病例新增(脑梗死)";
+        case 3:
+          return "病例新增(自发性脑出血)";
+        case 4:
+          return "病例新增(动脉瘤破裂(AnR))";
+        case 5:
+          return "病例新增(动静脉畸形破裂(AVMR))";
+        case 6:
+          return "病例新增(动脉瘤未破裂(An))";
+        case 7:
+          return "病例新增(动静脉畸形未破裂(AVM))";
+        case 8:
+          return "病例新增(颅外动脉狭窄(ECS))";
+        case 9:
+          return "病例新增(颅内动脉狭窄(ICS))";
+        default:
+      }
+    },
     formatDate(_date) {
       if (_date !== null) {
         let year = _date.getFullYear();
@@ -242,8 +344,8 @@ export default defineComponent({
      */
     async submitFormData() {
       const p1 = new Promise((resolve, reject) => {
-        this.$refs["ruleForm"].validate((valid) => {
-          console.log("ruleForm" + valid);
+        this.$refs["hos_one_info"].validate((valid) => {
+          console.log("hos_one_info" + valid);
           if (valid) {
             resolve();
           } else {
@@ -303,8 +405,8 @@ export default defineComponent({
                   result.data.data &&
                   result.data.data.StrokeId > 0
                 ) {
-                  this.$router.replace(
-                    `/caseList/${this.hos_one_info.disease_type}/${result.data.data.StrokeId}`
+                  this.$router.push(
+                    `/case-list/${this.hos_one_info.disease_type}/${result.data.data.StrokeId}`
                   );
                 }
               }
@@ -334,20 +436,5 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .caseAddModelTwoPage {
-  position: relative;
-  height: 100%;
-  padding: 0px 20px;
-  display: flex;
-  align-items: center;
-  .footer {
-    width: 100%;
-    display: flex;
-    margin: 10px 0 18px 0;
-
-    div {
-      width: 100%;
-      text-align: center;
-    }
-  }
 }
 </style>
